@@ -196,7 +196,7 @@ async def on_message(message):
     if message.content == '!help':
         await message.channel.send('To use this bot type "!weaponstat gun_name" without the " " (double quotes).\n '
                                    'E.g. !weaponstat F2 to get the stats for the F2.\n'
-                                   'Don\'t forget to type the actual name of the gun, smg-11 and not smg11.\n \n'
+                                   'Don\'t forget to type the actual name of the gun or an appropriate alias of it.\n \n'
                                    'Stats are taken from Rogue-9\'s spreadsheet. https://docs.google.com/spreadsheets/d/1QF72f4Bm7PfbWeSWbl8R8uL0mOzXpG_1vOjqEjXcFGk/edit')
 
     if message.content.startswith('!alias'):
