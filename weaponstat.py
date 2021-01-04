@@ -34,9 +34,87 @@ class Weapon:
         return self.ads
 
 
-def tuple_to_string(tuple_to_change):
-    string = ''.join(tuple_to_change)
-    return string
+def binary_search(low, high, value):
+    file = open('weapon_aliases.csv')
+    proper_name_csv = csv.reader(file, delimiter=',')
+    proper_name_list = list(proper_name_csv)
+    proper_name = [[element.upper() for element in sublist] for sublist in proper_name_list]
+
+    if high >= low:
+        mid = (high + low)//2
+
+        if proper_name[mid][0] == value.upper():
+            return mid
+
+        elif proper_name[mid][0] > value.upper():
+            return binary_search(low, mid - 1, value)
+
+        else:
+            return binary_search(mid + 1, high, value)
+
+    else:
+        return -1
+
+
+def linear_search(alias, mode):
+    file = open('weapon_aliases.csv')
+    aliases_csv = csv.reader(file, delimiter=',')
+    aliases_list = list(aliases_csv)
+    aliases = [[element.upper() for element in sublist] for sublist in aliases_list]
+
+    # for row in aliases:
+    #    for column in row:
+    #        if aliases[row][column] == alias.upper():
+    #            return 0
+
+    if mode == 'search':
+        if any(alias.upper() in rows for rows in aliases):
+            return 0
+
+    if mode == 'check':
+        row_lst = [[i for i, lst in enumerate(aliases) if alias.upper() in lst][0]]
+        row = row_lst.__getitem__(0)
+        return aliases[row][0]
+
+    return -1
+
+
+def add_alias(name, alias):
+    file = open('weapon_aliases.csv')
+    weapon_aliases = csv.reader(file, delimiter=',')
+    weapon_aliases = list(weapon_aliases)
+    added = False
+
+    # do stuff
+    search_result = binary_search(0, 86, name)
+
+    if search_result == -1:
+        return -1  # name was not found
+
+    alias_search = linear_search(alias, 'search')
+
+    if alias_search == 0:
+        return 0  # name was found but alias already exists
+
+    for i in range(len(weapon_aliases[search_result])):
+        if weapon_aliases[search_result][i] == '':
+            weapon_aliases[search_result][i] = alias
+            added = True
+            break
+
+    if not added:
+        weapon_aliases[search_result].append(alias)
+        added = True
+
+    write_to_file = open('weapon_aliases.csv', 'w+', newline='')
+    with write_to_file:
+        write = csv.writer(write_to_file)
+        write.writerows(weapon_aliases)
+
+    if added:
+        return 1  # alias was added
+    else:
+        return -2
 
 
 def read_file(weapon_name):
@@ -45,26 +123,23 @@ def read_file(weapon_name):
     weapon_to_find = weapon_name
     weapon_to_find = weapon_to_find.upper()
     found = False
+    found_by_alias = False
 
     for row in weapon_data:
-        if weapon_to_find == row[0]:
+        if weapon_to_find == row[0].upper():
             weapon_list.append(Weapon(row[0], row[1], row[44], row[45], row[47], row[49]))
             found = True
 
-    if not found:
-        return 'Please provide proper weapon name. Including hyphens.'
-
     file.seek(0)
 
-    #For debugging
-#    print('Weapon\t Damage\t DPS\t STK vs 1 armor\t TTK vs 1 armor\t STK vs 2 armor\t TTK vs 2 armor\t '
-#          'STK vs 3 armor/1+rook\t TTK vs 3 armor/1+rook\t Rate of Fire\n')
-    #For debugging
-#    print('{:>3}  {:>6}  {:>5} {:>12}  {:>14}  {:>14} {:>14}  {:>18}  {:>22} {:>20} '.format(
-#        weapon_list[0].get_name(), weapon_list[0].get_stat(), weapon_list[1].get_stat(),
-#        weapon_list[2].get_stat(), weapon_list[3].get_stat(), weapon_list[4].get_stat(),
-#        weapon_list[5].get_stat(), weapon_list[6].get_stat(), weapon_list[7].get_stat(), weapon_list[0].get_rof()))
+    if not found:
+        weapon_to_find = linear_search(weapon_name, 'check')
+        for row in weapon_data:
+            if weapon_to_find.upper() == row[0].upper():
+                weapon_list.append(Weapon(row[0], row[1], row[44], row[45], row[47], row[49]))
+                found = True
 
+    file.seek(0)
 
     pulled_weapon_name = weapon_list[0].get_name()
     weapon_dmg = weapon_list[0].get_stat()
@@ -76,17 +151,6 @@ def read_file(weapon_name):
     ttk2arm = weapon_list[5].get_stat()
     stk3arm_1r = weapon_list[6].get_stat()
     ttk3arm_1r = weapon_list[7].get_stat()
-
-    #tuple view
-    #message_tuple = ('Weapon\t', weapon_list[0].get_name(), '\t\t\tDamage\t',
-    #                 weapon_list[0].get_stat(), '\t\tDPS\t', weapon_list[1].get_stat(),
-    #                 '\t\tRate of Fire\t', weapon_list[0].get_rof(), '\n',
-    #                 'STK vs 1 armor\t', weapon_list[2].get_stat(), '\t\tTTK vs 1 armor\t',
-    #                 weapon_list[3].get_stat(), '\t\tSTK vs 2 armor\t', weapon_list[4].get_stat(), '\n',
-    #                 'TTK vs 2 armor\t', weapon_list[5].get_stat(), '\tSTK vs 3 armor/1+rook\t',
-    #                 weapon_list[6].get_stat(), '\tTTK vs 3 armor/1+rook\t', weapon_list[7].get_stat())
-
-    #message = tuple_to_string(message_tuple)
 
     weapon_list.clear()
     found = False
@@ -103,12 +167,13 @@ def read_file(weapon_name):
 
     return embed
 
-#For debugging
-#def main():
+
+# For debugging
+# def main():
 #    read_file('CSRX 300')
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    main()
 
 @client.event
@@ -138,9 +203,34 @@ async def on_message(message):
 
     if message.content == '!help':
         await message.channel.send('To use this bot type "!weaponstat gun_name" without the " " (double quotes).\n '
-              'E.g. !weaponstat F2 to get the stats for the F2.\n'
-              'Don\'t forget to type the actual name of the gun, smg-11 and not smg11.\n \n'
-              'Stats are taken from Rogue-9\'s spreadsheet. https://docs.google.com/spreadsheets/d/1QF72f4Bm7PfbWeSWbl8R8uL0mOzXpG_1vOjqEjXcFGk/edit')
+                                   'E.g. !weaponstat F2 to get the stats for the F2.\n'
+                                   'Don\'t forget to type the actual name of the gun, smg-11 and not smg11.\n \n'
+                                   'Stats are taken from Rogue-9\'s spreadsheet. https://docs.google.com/spreadsheets/d/1QF72f4Bm7PfbWeSWbl8R8uL0mOzXpG_1vOjqEjXcFGk/edit')
+
+    if message.content.startswith('!alias'):
+        string_array = message.content.split()
+        if len(string_array) < 3:
+            await message.channel.send('Please provide the weapon\'s actual name first and its alias second.')
+
+        if len(string_array) == 4:
+            name = string_array[1] + ' ' + string_array[2]
+            alias = string_array[3]
+        else:
+            name = string_array[1]
+            alias = string_array[2]
+
+        alias_no = add_alias(name, alias)
+
+        if alias_no == -1:
+            await message.channel.send('Weapon name was not found.\n'
+                                       'Make sure you are writing the proper name first and correctly.')
+
+        if alias_no == 0:
+            await message.channel.send('Weapon alias already exists.')
+
+        if alias_no == 1:
+            await message.channel.send('Weapon alias has been added.\n'
+                                       'Thank you for your contribution')
 
 
 client.run(token)
