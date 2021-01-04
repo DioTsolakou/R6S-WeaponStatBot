@@ -4,8 +4,8 @@ Weapon stat Discord bot for Rainbow 6: Siege
 # Commands
 !weaponstat "weapon name"
 
-![alt text](readme_pic.png?raw=true)
+![alt text](readme_pic.png)
 
 !help
 
-![alt text](readme_pic_1.png)
+![alt text](help_pic.png)
