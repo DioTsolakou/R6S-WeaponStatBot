@@ -49,10 +49,10 @@ def read_file(weapon_name):
     for row in weapon_data:
         if weapon_to_find == row[0]:
             weapon_list.append(Weapon(row[0], row[1], row[44], row[45], row[47], row[49]))
-        found = True
+            found = True
 
     if not found:
-        print('Please provide proper weapon name. Including hyphens')
+        return 'Please provide proper weapon name. Including hyphens.'
 
     file.seek(0)
 
@@ -65,28 +65,43 @@ def read_file(weapon_name):
 #        weapon_list[2].get_stat(), weapon_list[3].get_stat(), weapon_list[4].get_stat(),
 #        weapon_list[5].get_stat(), weapon_list[6].get_stat(), weapon_list[7].get_stat(), weapon_list[0].get_rof()))
 
-    #header = ('Weapon\t Damage\t DPS\t STK vs 1 armor\t TTK vs 1 armor\t STK vs 2 armor\t TTK vs 2 armor\t '
-    #      'STK vs 3 armor/1+rook\t TTK vs 3 armor/1+rook\t Rate of Fire\n')
 
-    #stats = ('{:>3}  {:>6}  {:>5} {:>12}  {:>14}  {:>14} {:>14}  {:>18}  {:>22} {:>20} '.format(
-    #    weapon_list[0].get_name(), weapon_list[0].get_stat(), weapon_list[1].get_stat(),
-    #    weapon_list[2].get_stat(), weapon_list[3].get_stat(), weapon_list[4].get_stat(),
-    #    weapon_list[5].get_stat(), weapon_list[6].get_stat(), weapon_list[7].get_stat(), weapon_list[0].get_rof()))
+    pulled_weapon_name = weapon_list[0].get_name()
+    weapon_dmg = weapon_list[0].get_stat()
+    weapon_rof = weapon_list[0].get_rof()
+    weapon_dps = weapon_list[1].get_stat()
+    stk1arm = weapon_list[2].get_stat()
+    ttk1arm = weapon_list[3].get_stat()
+    stk2arm = weapon_list[4].get_stat()
+    ttk2arm = weapon_list[5].get_stat()
+    stk3arm_1r = weapon_list[6].get_stat()
+    ttk3arm_1r = weapon_list[7].get_stat()
 
-    message_tuple = ('Weapon\t', weapon_list[0].get_name(), '\t\t\tDamage\t',
-                     weapon_list[0].get_stat(), '\t\tDPS\t', weapon_list[1].get_stat(),
-                     '\t\tRate of Fire\t', weapon_list[0].get_rof(), '\n',
-                     'STK vs 1 armor\t', weapon_list[2].get_stat(), '\t\tTTK vs 1 armor\t',
-                     weapon_list[3].get_stat(), '\t\tSTK vs 2 armor\t', weapon_list[4].get_stat(), '\n',
-                     'TTK vs 2 armor\t', weapon_list[5].get_stat(), '\tSTK vs 3 armor/1+rook\t',
-                     weapon_list[6].get_stat(), '\tTTK vs 3 armor/1+rook\t', weapon_list[7].get_stat())
+    #tuple view
+    #message_tuple = ('Weapon\t', weapon_list[0].get_name(), '\t\t\tDamage\t',
+    #                 weapon_list[0].get_stat(), '\t\tDPS\t', weapon_list[1].get_stat(),
+    #                 '\t\tRate of Fire\t', weapon_list[0].get_rof(), '\n',
+    #                 'STK vs 1 armor\t', weapon_list[2].get_stat(), '\t\tTTK vs 1 armor\t',
+    #                 weapon_list[3].get_stat(), '\t\tSTK vs 2 armor\t', weapon_list[4].get_stat(), '\n',
+    #                 'TTK vs 2 armor\t', weapon_list[5].get_stat(), '\tSTK vs 3 armor/1+rook\t',
+    #                 weapon_list[6].get_stat(), '\tTTK vs 3 armor/1+rook\t', weapon_list[7].get_stat())
 
-    message = tuple_to_string(message_tuple)
+    #message = tuple_to_string(message_tuple)
 
     weapon_list.clear()
     found = False
-    #return header, stats
-    return message
+    embed = discord.Embed(title="Weapon", description=pulled_weapon_name)
+    embed.add_field(name="Damage", value=weapon_dmg, inline=True)
+    embed.add_field(name="DPS", value=weapon_dps, inline=True)
+    embed.add_field(name="Rate Of Fire", value=weapon_rof, inline=True)
+    embed.add_field(name="STK vs 1 Armors", value=stk1arm, inline=False)
+    embed.add_field(name="TTK vs 1 Armors", value=ttk1arm, inline=True)
+    embed.add_field(name="STK vs 2 Armors", value=stk2arm, inline=True)
+    embed.add_field(name="TTK vs 2 Armors", value=ttk2arm, inline=True)
+    embed.add_field(name="STK vs 3 Armors/1 Armors + Rook", value=stk3arm_1r, inline=False)
+    embed.add_field(name="TTK vs 3 Armors/1 Armors + Rook", value=ttk3arm_1r, inline=True)
+
+    return embed
 
 #For debugging
 #def main():
@@ -117,8 +132,8 @@ async def on_message(message):
             string_array[1] = string_array[1] + ' ' + string_array[2]
 
         weapon_name = string_array[1]
-        message_to_send = read_file(weapon_name)
-        await message.channel.send(message_to_send)
+        embed = read_file(weapon_name)
+        await message.channel.send(embed=embed)
         return
 
     if message.content == '!help':
