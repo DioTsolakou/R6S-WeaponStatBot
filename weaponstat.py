@@ -62,11 +62,6 @@ def linear_search(alias, mode):
     aliases_list = list(aliases_csv)
     aliases = [[element.upper() for element in sublist] for sublist in aliases_list]
 
-    # for row in aliases:
-    #    for column in row:
-    #        if aliases[row][column] == alias.upper():
-    #            return 0
-
     if mode == 'search':
         if any(alias.upper() in rows for rows in aliases):
             return 0
@@ -123,7 +118,6 @@ def read_file(weapon_name):
     weapon_to_find = weapon_name
     weapon_to_find = weapon_to_find.upper()
     found = False
-    found_by_alias = False
 
     for row in weapon_data:
         if weapon_to_find == row[0].upper():
@@ -137,7 +131,6 @@ def read_file(weapon_name):
         for row in weapon_data:
             if weapon_to_find.upper() == row[0].upper():
                 weapon_list.append(Weapon(row[0], row[1], row[44], row[45], row[47], row[49]))
-                found = True
 
     file.seek(0)
 
@@ -153,7 +146,6 @@ def read_file(weapon_name):
     ttk3arm_1r = weapon_list[7].get_stat()
 
     weapon_list.clear()
-    found = False
     embed = discord.Embed(title="Weapon", description=pulled_weapon_name)
     embed.add_field(name="Damage", value=weapon_dmg, inline=True)
     embed.add_field(name="DPS", value=weapon_dps, inline=True)
